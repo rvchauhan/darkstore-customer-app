@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { signOut, useSession } from "@/lib/session";
 import { getCartApi } from "@/lib/api";
 
@@ -75,28 +75,69 @@ export function CustomerShell({
               </span>
             )}
           </Link>
-          <Link
-            to="/orders"
-            className="cursor-pointer rounded-full p-2 transition-colors hover:bg-primary-container"
-          >
-            <span className="material-symbols-outlined">receipt_long</span>
-          </Link>
           <button
-            onClick={() => {
-              signOut();
-              navigate({ to: "/" });
-            }}
             className="cursor-pointer rounded-full p-2 transition-colors hover:bg-primary-container"
-            title="Sign out"
+            title="Notifications — coming soon"
           >
-            <span className="material-symbols-outlined">logout</span>
+            <span className="material-symbols-outlined">notifications</span>
           </button>
+          <AccountMenu />
         </div>
       </header>
 
       <main className="pt-20">{children}</main>
 
       <MobileNav pathname={pathname} />
+    </div>
+  );
+}
+
+function AccountMenu() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="cursor-pointer rounded-full p-2 transition-colors hover:bg-primary-container"
+      >
+        <span className="material-symbols-outlined">account_circle</span>
+      </button>
+      {open && (
+        <div className="absolute top-full right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-outline-variant/30 bg-surface py-1 shadow-lg">
+          <button
+            onClick={() => {
+              setOpen(false);
+              navigate({ to: "/orders" });
+            }}
+            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-on-surface hover:bg-surface-container-low"
+          >
+            <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+            My Orders
+          </button>
+          <button
+            onClick={() => {
+              setOpen(false);
+              signOut();
+              navigate({ to: "/" });
+            }}
+            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-destructive hover:bg-surface-container-low"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            Sign out
+          </button>
+        </div>
+      )}
     </div>
   );
 }

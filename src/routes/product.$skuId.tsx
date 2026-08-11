@@ -1,13 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { addCartItemApi, getProductApi } from "@/lib/api";
-import { ApiError } from "@/lib/api/types";
+import { getProductApi } from "@/lib/api";
 import { useSelectedStoreId } from "@/lib/selected-store";
+import { useAddToCart } from "@/hooks/use-add-to-cart";
 
 export const Route = createFileRoute("/product/$skuId")({
   component: ProductDetailPage,
@@ -17,7 +16,6 @@ function ProductDetailPage() {
   const { skuId } = Route.useParams();
   const storeId = useSelectedStoreId();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -31,15 +29,20 @@ function ProductDetailPage() {
     enabled: !!storeId,
   });
 
-  const addToCart = useMutation({
-    mutationFn: () => addCartItemApi({ storeId: storeId!, skuId, quantity }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cart"] });
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
-    },
-    onError: (err) => toast.error(err instanceof ApiError ? err.message : "Could not add to cart"),
-  });
+  const addToCart = useAddToCart(storeId ?? "");
+
+  function handleAddToCart() {
+    if (!product) return;
+    addToCart.mutate(
+      { product, quantity },
+      {
+        onSuccess: () => {
+          setAdded(true);
+          setTimeout(() => setAdded(false), 2000);
+        },
+      },
+    );
+  }
 
   if (!storeId) return null;
 
@@ -123,7 +126,7 @@ function ProductDetailPage() {
                 size="lg"
                 className="w-full"
                 disabled={product.availableQty === 0 || addToCart.isPending}
-                onClick={() => addToCart.mutate()}
+                onClick={handleAddToCart}
               >
                 <span className="material-symbols-outlined">
                   {added ? "check_circle" : "shopping_basket"}
