@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { checkoutApi, getCartApi, removeCartItemApi, updateCartItemApi } from "@/lib/api";
-import { ApiError } from "@/lib/api/types";
+import { ApiError, formatOrderLabel } from "@/lib/api/types";
 import { setSelectedStoreId } from "@/lib/selected-store";
 
 export const Route = createFileRoute("/checkout")({
@@ -46,7 +46,7 @@ function CheckoutPage() {
       // Cart is empty after checkout — clear the remembered store so the next
       // visit to Home re-prompts (customer may order from a different store).
       setSelectedStoreId(null);
-      toast.success(`Order placed! #${order.id.slice(0, 8)}`);
+      toast.success(`Order placed! ${formatOrderLabel(order)}`);
       navigate({ to: "/orders" });
     },
     onError: (err) => toast.error(err instanceof ApiError ? err.message : "Checkout failed"),

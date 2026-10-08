@@ -66,6 +66,7 @@ export type DeliveryAddress = {
 
 export type Order = {
   id: string;
+  orderNumber: string | null;
   customerId: string;
   businessId: string;
   storeId: string;
@@ -87,3 +88,7 @@ export type OrderItem = {
   quantity: number;
   lineTotal: string;
 };
+
+export function formatOrderLabel(order: { id: string; orderNumber?: string | null }): string {
+  return order.orderNumber ?? `#${order.id.slice(0, 8)}`;
+}

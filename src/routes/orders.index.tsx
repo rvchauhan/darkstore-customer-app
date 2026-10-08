@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatOrderLabel } from "@/lib/api/types";
 import { listOrdersApi } from "@/lib/api";
 
 export const Route = createFileRoute("/orders/")({
@@ -52,7 +53,7 @@ function OrdersPage() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-bold">Order #{order.id.slice(0, 8)}</p>
+                    <p className="font-bold">Order {formatOrderLabel(order)}</p>
                     <p className="text-xs text-on-surface-variant">
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
